@@ -1,0 +1,85 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           futharkShuffle
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/futharkShuffle#readme>
+homepage:       https://github.com/githubuser/futharkShuffle#readme
+bug-reports:    https://github.com/githubuser/futharkShuffle/issues
+author:         Author name here
+maintainer:     ianmbloom@gmail.com
+copyright:      2020 Ian Bloom
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/futharkShuffle
+
+library
+  exposed-modules:
+      Futhark
+      Futhark.Config
+      Futhark.Context
+      Futhark.Entries
+      Futhark.Fut
+      Futhark.Raw
+      Futhark.TypeClasses
+      Futhark.Types
+      Futhark.Utils
+      Futhark.Wrap
+      Show
+  other-modules:
+      Paths_futharkShuffle
+  hs-source-dirs:
+      src
+  include-dirs:
+      /opt/cuda/include
+  c-sources:
+      fut/entries.c
+  extra-lib-dirs:
+      /opt/cuda/lib
+  extra-libraries:
+      cuda cudart nvrtc OpenCL
+  build-depends:
+      OpenCL
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , cuda
+    , deepseq
+    , massiv >=1.0.0.0
+    , monad-control
+    , mtl
+    , transformers
+    , transformers-base
+  default-language: Haskell2010
+
+executable test-shuffle-gradient
+  main-is: Main.hs
+  other-modules:
+      Paths_futharkShuffle
+  hs-source-dirs:
+      test/shuffle-gradient
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      OpenCL
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , cuda
+    , deepseq
+    , futharkShuffle
+    , massiv >=1.0.0.0
+    , monad-control
+    , mtl
+    , transformers
+    , transformers-base
+  default-language: Haskell2010
