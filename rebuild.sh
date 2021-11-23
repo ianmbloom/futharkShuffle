@@ -1,6 +1,6 @@
 #!/bin/bash
-futhark cuda fut/entries.fut --library --verbose
-futhask cuda fut/entries.h src Futhark
+futhark opencl fut/entries.fut --library --verbose
+futhask opencl fut/entries.h src Futhark
 
 # stack clean
 stack build

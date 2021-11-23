@@ -2,17 +2,18 @@
 module Futhark.Config where
 import qualified Futhark.Raw as Raw
 import Foreign.C
-import Foreign.CUDA.Ptr(DevicePtr(..))
+import Control.Parallel.OpenCL (CLMem, CLCommandQueue)
 
 data ContextOption
-    = NvrtcOptions [String]
+    = BuildOptions [String]
     | Debug Int
+    | Profile Int
     | Log Int
     | Device String
+    | Platform String
     | LoadProgram String
-    | DumpProgram String
-    | LoadPtx String
-    | DumpPtx String
+    | LoadBinary String
+    | DumpBinary String
     | DefaultGroupSize Int
     | DefaultGroupNum Int
     | DefaultTileSize Int
@@ -20,14 +21,15 @@ data ContextOption
     | Size String CSize
 
 setOption config option = case option of
-    (NvrtcOptions os)    -> mapM_ (\o -> withCString o $ Raw.context_config_add_nvrtc_option config) os
+    (BuildOptions os)    -> mapM_ (\o -> withCString o $ Raw.context_config_add_build_option config) os
     (Debug flag)         -> Raw.context_config_set_debugging config flag
+    (Profile flag)       -> Raw.context_config_set_profiling config flag
     (Log flag)           -> Raw.context_config_set_logging   config flag
     (Device s)           -> withCString s $ Raw.context_config_set_device   config
+    (Platform s)         -> withCString s $ Raw.context_config_set_platform config
     (LoadProgram s)      -> withCString s $ Raw.context_config_load_program_from config
-    (DumpProgram s)      -> withCString s $ Raw.context_config_dump_program_to   config
-    (LoadPtx s)          -> withCString s $ Raw.context_config_load_ptx_from     config
-    (DumpPtx s)          -> withCString s $ Raw.context_config_dump_ptx_to       config
+    (LoadBinary s)       -> withCString s $ Raw.context_config_load_binary_from  config
+    (DumpBinary s)       -> withCString s $ Raw.context_config_dump_binary_to    config
     (DefaultGroupSize s) -> Raw.context_config_set_default_group_size config s
     (DefaultGroupNum n)  -> Raw.context_config_set_default_num_groups config n
     (DefaultTileSize s)  -> Raw.context_config_set_default_tile_size  config s

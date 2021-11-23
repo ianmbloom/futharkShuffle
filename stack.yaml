@@ -17,7 +17,8 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-15.0
+resolver:
+  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/7.yaml
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,12 +42,7 @@ extra-deps:
 - Color-0.3.3@sha256:857fd235bdc50411586d035f59829c7c7b9326f61d19847f1bc76c36714e701a,8737
 - JuicyPixels-3.3.6@sha256:03bd32c3a884ac8a32f49334f14695469a710945c84cef9a1e059a79ac416996,3911
 - OpenCL-1.0.3.4@sha256:ef90f955632749353251887ce66357c5ed8e98e8b437ff91ce406ae9187f3953,2590
-- primitive-0.7.3.0@sha256:6b28a1c0572f5ca50597ba8388aeade21515842969ae192cdc6bfca81367bf56,2951
-- random-1.2.1
 - scheduler-2.0.0.1@sha256:3e36c5a50536d20f03320defd64e3d3adb6309b471ae048efda7df9d54361308,2556
-- splitmix-0.1.0.4@sha256:714a55fd28d3e2533bd5b49e74f604ef8e5d7b06f249c8816f6c54aed431dcf1,6483
-- pvar-1.0.0.0@sha256:3d4a6855b0960baee78f6956f082eb8aa1cede52d2955b7faef186d1133f7964,1893
-
 
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
