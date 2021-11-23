@@ -1,3 +1,46 @@
+-- Latest output
+
+start
+Device #0: name="NVIDIA RTX A6000", compute capability=8.6
+Using device #0
+Warning: device compute capability is 8.6, but newest supported by Futhark is 8.0.
+NVRTC compile options:
+	-arch
+	compute_80
+	-default-device
+	-G
+	-lineinfo
+	-Dbuiltinzhiota_i64zigroup_sizze_10052=256
+	-Dshufflerzigroup_sizze_10057=256
+	-Dshufflerzisegmap_group_sizze_9887=256
+	-Dshufflerzisegmap_group_sizze_9935=256
+	-Dshufflerzisegmap_num_groups_9937=504
+	-DLOCKSTEP_WIDTH=32
+	-DMAX_THREADS_PER_BLOCK=1024
+	-I/usr/local/cuda/include
+	-I/usr/include
+
+after futhark
+out:
+Allocating 80 bytes for mem_9982 in space 'device' (then allocated: 80 bytes) (new peak).
+Launching builtin#iota_i64.iota_i64_10049 with grid size [1, 1, 1] and block size [65, 1, 1]; shared memory: 0 bytes.
+Kernel builtin#iota_i64.iota_i64_10049 runtime: 26us
+Allocating 800 bytes for mem_9986 in space 'device' (then allocated: 880 bytes) (new peak).
+Launching shuffler.replicate_10054 with grid size [1, 1, 1] and block size [59388624, 1, 1]; shared memory: 0 bytes.
+Allocating 80 bytes for mem_9982 in space 'device' (then allocated: 960 bytes) (new peak).
+Launching builtin#iota_i64.iota_i64_10049 with grid size [1, 1, 1] and block size [65, 1, 1]; shared memory: 0 bytes.
+Kernel builtin#iota_i64.iota_i64_10049 runtime: 12us
+Allocating 800 bytes for mem_9986 in space 'device' (then allocated: 1760 bytes) (new peak).
+Launching shuffler.replicate_10054 with grid size [1, 1, 1] and block size [59388624, 1, 1]; shared memory: 0 bytes.
+test-shuffle-gradient: fut/entries.c:5234: CUDA call
+  cuLaunchKernel(ctx->shufflerzireplicate_10054, grid[0], grid[1], grid[2], group_sizze_10057, 1, 1, 0, ((void *)0), kernel_args_10134, ((void *)0))
+failed with error code 1 (invalid argument)
+
+CallStack (from HasCallStack):
+  error, called at src/Futhark/Context.hs:37:5 in futharkShuffle-0.1.0.0-8BGxOflgrP960euQF7eKVf:Futhark.Context
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 start
 Warning: device compute capability is 8.6, but newest supported by Futhark is 8.0.
 after futhark
@@ -25,7 +68,7 @@ failed with error code 1 (invalid argument)
 CallStack (from HasCallStack):
   error, called at src/Futhark/Context.hs:37:5 in futharkShuffle-0.1.0.0-CIpBwBvPndrKZAUSf2jIUV:Futhark.Context
 
----------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Another interesting error in opencl
 
 start

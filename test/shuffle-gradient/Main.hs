@@ -43,7 +43,7 @@ shuffleGrid :: (Int, Int)
 shuffleGrid (h, w) =
   do  putStrLn "start"
       ( output   :: Futhark3d Int64) <-
-          runFutT $
+          runFutTWith [Debug 1] $
               do futOutput <- E.shuffler 345 (fromIntegral h) (fromIntegral w)
                  fromFuthark futOutput
       putStrLn "after futhark"
