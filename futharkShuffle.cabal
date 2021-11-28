@@ -55,6 +55,7 @@ library
     , containers
     , cuda
     , deepseq
+    , lens
     , massiv >=1.0.0.0
     , monad-control
     , mtl
@@ -77,6 +78,7 @@ executable test-shuffle-gradient
     , cuda
     , deepseq
     , futharkShuffle
+    , lens
     , massiv >=1.0.0.0
     , monad-control
     , mtl

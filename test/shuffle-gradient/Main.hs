@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeApplications    #-}
 {-# LANGUAGE TypeOperators       #-}
 {-# LANGUAGE PatternSynonyms     #-}
+{-# LANGUAGE TemplateHaskell     #-}
 module Main where
 
 import qualified Data.Massiv.Array as A
@@ -22,6 +23,9 @@ import Data.Massiv.Array ( Array
                          , pattern Sz3
                          )
 import Control.Monad.Trans
+import Control.Monad.State
+import Control.Lens
+
 import Futhark
 import Futhark.Types
 import qualified Futhark.Entries as E
@@ -34,21 +38,34 @@ import Foreign.C.Types
 
 type Futhark3d t = Array S Ix3 t
 
-boolToCBool :: Bool -> CBool
-boolToCBool True  = CBool 1
-boolToCBool False = CBool 0
+data CountState =
+     CountState
+     { _counter :: Int
+     }
+makeLenses ''CountState
+
+type MyMonad c m = StateT CountState (FutT c m)
+
+runMyMonad :: MyMonad c IO a -> IO a
+runMyMonad f = do
+  (a,s) <- runFutTWith [Debug 1] $ runStateT f (CountState 0)
+  putStrLn $ show (s ^. counter)
+  return a
+
+message :: String -> MyMonad c IO ()
+message string = lift . lift $ putStrLn string
 
 shuffleGrid :: (Int, Int)
-            -> IO ()
+            -> MyMonad c IO ()
 shuffleGrid (h, w) =
-  do  putStrLn "start"
-      ( output   :: Futhark3d Int64) <-
-          runFutTWith [Debug 1] $
+  do  message "start"
+      ( output   :: Futhark3d Int64) <- lift $
               do futOutput <- E.shuffler 345 (fromIntegral h) (fromIntegral w)
                  fromFuthark futOutput
-      putStrLn "after futhark"
-      putStrLn $ "out:\n" ++ showGrid3d output
-      putStrLn "done"
+      counter += 1
+      message "after futhark"
+      message $ "out:\n" ++ showGrid3d output
+      message "done"
 
 sizes :: [(Int,Int)]
 sizes = [  (  10,  10)
@@ -57,4 +74,4 @@ sizes = [  (  10,  10)
 
 main :: IO ()
 main = do
-    mapM_ shuffleGrid sizes
+    runMyMonad $ mapM_ shuffleGrid sizes

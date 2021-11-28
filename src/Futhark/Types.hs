@@ -12,7 +12,7 @@ import Foreign.C.Types (CBool(..), CSize(..), CChar(..), CFile(..))
 import Foreign.Ptr (Ptr)
 import Control.DeepSeq (rwhnf)
 
-data I64_3d = I64_3d (MV.MVar Int) (F.ForeignPtr Raw.Futhark_i64_3d)
+data I64_3d c = I64_3d (MV.MVar Int) (F.ForeignPtr Raw.Futhark_i64_3d)
 instance FutharkObject I64_3d Raw.Futhark_i64_3d where
   wrapFO = I64_3d
   freeFO = Raw.free_i64_3d

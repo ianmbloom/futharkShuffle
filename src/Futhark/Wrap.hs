@@ -12,7 +12,7 @@ import qualified Data.Massiv.Array.Unsafe as MU
 import Control.Concurrent
 
 
-wrapIn :: FutharkObject wrapped raw => Context -> Ptr raw -> IO wrapped
+wrapIn :: FutharkObject wrapped raw => Context -> Ptr raw -> IO (wrapped c)
 wrapIn context@(Context childCount pointer) rawObject = do
     modifyMVar_ childCount (\cc -> return $! (cc+1))
     referenceCounter <- newMVar 0

@@ -9,19 +9,19 @@ import Control.Monad.IO.Class
 import Control.Concurrent
 
 class FutharkObject wrapped raw | wrapped -> raw, raw -> wrapped where
-    wrapFO :: MVar Int -> ForeignPtr raw -> wrapped
+    wrapFO :: MVar Int -> ForeignPtr raw -> wrapped c
     freeFO :: Ptr Raw.Futhark_context -> Ptr raw -> IO Int
-    fromFO :: wrapped -> (MVar Int, ForeignPtr raw)
+    fromFO :: wrapped c -> (MVar Int, ForeignPtr raw)
 
-withFO :: FutharkObject wrapped raw => wrapped -> (Ptr raw -> IO b) -> IO b
+withFO :: FutharkObject wrapped raw => wrapped c -> (Ptr raw -> IO b) -> IO b
 withFO = withForeignPtr . snd . fromFO
 
-addReferenceFO :: (MonadIO m, FutharkObject wrapped raw) => wrapped -> FutT m ()
+addReferenceFO :: (MonadIO m, FutharkObject wrapped raw) => wrapped c -> FutT c m ()
 addReferenceFO fo = lift . liftIO $
     let (referenceCounter, _) = fromFO fo
      in modifyMVar_ referenceCounter (\r -> pure (r+1))
 
-finalizeFO :: (MonadIO m, FutharkObject wrapped raw) => wrapped -> FutT m ()
+finalizeFO :: (MonadIO m, FutharkObject wrapped raw) => wrapped c -> FutT c m ()
 finalizeFO fo = lift . liftIO $
     let (referenceCounter, pointer) = fromFO fo
      in modifyMVar_ referenceCounter (\r
@@ -39,8 +39,8 @@ class (FutharkObject array rawArray, Storable element, M.Index dim)
         valuesFA :: Ptr Raw.Futhark_context -> Ptr rawArray -> Ptr element -> IO Int
 
 class Input fo ho where
-    toFuthark :: Monad m => ho -> FutT m fo
+    toFuthark :: Monad m => ho -> FutT c m (fo c)
 
 class Output fo ho where
-    fromFuthark :: Monad m => fo -> FutT m ho
+    fromFuthark :: Monad m => fo c -> FutT c m ho
 

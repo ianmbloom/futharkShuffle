@@ -17,7 +17,7 @@ shuffler
   => Int64
   -> Int64
   -> Int64
-  -> FutT m I64_3d
+  -> FutT c m (I64_3d c)
 shuffler in0 in1 in2
   =  Fut.unsafeLiftFromIO $ \context
   -> F.malloc >>= \out0
