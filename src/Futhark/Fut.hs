@@ -7,6 +7,7 @@ import Control.Monad.Base
 import Control.Monad.Trans
 import Control.Monad.Trans.Control
 import Control.Monad.Identity
+import Control.Monad.IO.Class
 
 
 newtype FutT c m a = FutT (Context -> m a)
@@ -28,6 +29,10 @@ instance Applicative m => Applicative (FutT c m) where
 instance Monad m => Monad (FutT c m) where
     (>>=) (FutT a) f = FutT (\c -> a c >>= (\(FutT b) -> b c) . f)
     {-# INLINEABLE (>>=) #-}
+
+instance MonadIO m => MonadIO (FutT c m) where
+   liftIO = lift . liftIO
+   {-# INLINEABLE liftIO #-}
 
 instance (MonadBase b m) => MonadBase b (FutT c m) where
     liftBase = liftBaseDefault

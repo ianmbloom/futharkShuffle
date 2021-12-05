@@ -4,6 +4,7 @@ import qualified Futhark.Raw as Raw
 import Foreign.C
 import Foreign.CUDA.Ptr(DevicePtr(..))
 
+
 data ContextOption
     = NvrtcOptions [String]
     | Debug Int
@@ -32,4 +33,7 @@ setOption config option = case option of
     (DefaultGroupNum n)  -> Raw.context_config_set_default_num_groups config n
     (DefaultTileSize s)  -> Raw.context_config_set_default_tile_size  config s
     (DefaultThreshold n) -> Raw.context_config_set_default_threshold  config n
-    (Size name s)        -> error "size is deprecated"
+    (Size name s)        -> withCString name $ \n -> Raw.context_config_set_tuning_param config n s
+                                           >>= \code -> if code == 0
+                                                           then return ()
+                                                           else error "invalid size"

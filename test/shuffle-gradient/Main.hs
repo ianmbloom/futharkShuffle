@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeOperators       #-}
 {-# LANGUAGE PatternSynonyms     #-}
 {-# LANGUAGE TemplateHaskell     #-}
+{-# LANGUAGE RankNTypes          #-}
 module Main where
 
 import qualified Data.Massiv.Array as A
@@ -46,9 +47,9 @@ makeLenses ''CountState
 
 type MyMonad c m = StateT CountState (FutT c m)
 
-runMyMonad :: MyMonad c IO a -> IO a
+runMyMonad :: (forall c . MyMonad c IO a) -> IO a
 runMyMonad f = do
-  (a,s) <- runFutTWith [Debug 1] $ runStateT f (CountState 0)
+  (a,s) <- runFutTWith [Debug 1{-, Size "shuffler.group_size_10059" 128-}] $ runStateT f (CountState 0)
   putStrLn $ show (s ^. counter)
   return a
 
