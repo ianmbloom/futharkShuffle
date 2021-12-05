@@ -3847,7 +3847,7 @@ struct futhark_context_config *futhark_context_config_new(void)
 {
     struct futhark_context_config *cfg =
                                   (struct futhark_context_config *) malloc(sizeof(struct futhark_context_config));
-
+    
     if (cfg == NULL)
         return NULL;
     cfg->profiling = 0;
@@ -4040,7 +4040,7 @@ struct futhark_context *futhark_context_new(struct futhark_context_config *cfg)
 {
     struct futhark_context *ctx =
                            (struct futhark_context *) malloc(sizeof(struct futhark_context));
-    printf("context_new\n");
+    
     if (ctx == NULL)
         return NULL;
     ctx->debugging = ctx->detail_memory = cfg->cu_cfg.debugging;
@@ -4065,9 +4065,9 @@ struct futhark_context *futhark_context_new(struct futhark_context_config *cfg)
     ctx->error = cuda_setup(&ctx->cuda, cuda_program, cfg->nvrtc_opts);
     if (ctx->error != NULL)
         return NULL;
-
+    
     int32_t no_error = -1;
-
+    
     CUDA_SUCCEED_FATAL(cuMemAlloc(&ctx->global_failure, sizeof(no_error)));
     CUDA_SUCCEED_FATAL(cuMemcpyHtoD(ctx->global_failure, &no_error,
                                     sizeof(no_error)));
@@ -4141,7 +4141,6 @@ struct futhark_context *futhark_context_new(struct futhark_context_config *cfg)
 }
 void futhark_context_free(struct futhark_context *ctx)
 {
-    printf("context_free\n");
     free_constants(ctx);
     cuda_cleanup(&ctx->cuda);
     free_lock(&ctx->lock);
@@ -4153,18 +4152,18 @@ int futhark_context_sync(struct futhark_context *ctx)
     CUDA_SUCCEED_OR_RETURN(cuCtxSynchronize());
     if (ctx->failure_is_an_option) {
         int32_t failure_idx;
-
+        
         CUDA_SUCCEED_OR_RETURN(cuMemcpyDtoH(&failure_idx, ctx->global_failure,
                                             sizeof(int32_t)));
         ctx->failure_is_an_option = 0;
         if (failure_idx >= 0) {
             int32_t no_failure = -1;
-
+            
             CUDA_SUCCEED_OR_RETURN(cuMemcpyHtoD(ctx->global_failure,
                                                 &no_failure, sizeof(int32_t)));
-
+            
             int64_t args[0 + 1];
-
+            
             CUDA_SUCCEED_OR_RETURN(cuMemcpyDtoH(&args, ctx->global_failure_args,
                                                 sizeof(args)));
             switch (failure_idx) { }
@@ -4207,9 +4206,9 @@ static int memblock_alloc_device(struct futhark_context *ctx,
                       "Negative allocation of %lld bytes attempted for %s in %s.\n",
                       (long long) size, desc, "space 'device'",
                       ctx->cur_mem_usage_device);
-
+    
     int ret = memblock_unref_device(ctx, block, desc);
-
+    
     ctx->cur_mem_usage_device += size;
     if (ctx->detail_memory)
         fprintf(ctx->log,
@@ -4236,7 +4235,7 @@ static int memblock_set_device(struct futhark_context *ctx,
                                char *lhs_desc)
 {
     int ret = memblock_unref_device(ctx, lhs, lhs_desc);
-
+    
     if (rhs->references != NULL)
         (*rhs->references)++;
     *lhs = *rhs;
@@ -4273,9 +4272,9 @@ static int memblock_alloc(struct futhark_context *ctx, struct memblock *block,
                       "Negative allocation of %lld bytes attempted for %s in %s.\n",
                       (long long) size, desc, "default space",
                       ctx->cur_mem_usage_default);
-
+    
     int ret = memblock_unref(ctx, block, desc);
-
+    
     ctx->cur_mem_usage_default += size;
     if (ctx->detail_memory)
         fprintf(ctx->log,
@@ -4299,7 +4298,7 @@ static int memblock_set(struct futhark_context *ctx, struct memblock *lhs,
                         struct memblock *rhs, const char *lhs_desc)
 {
     int ret = memblock_unref(ctx, lhs, lhs_desc);
-
+    
     if (rhs->references != NULL)
         (*rhs->references)++;
     *lhs = *rhs;
@@ -4321,9 +4320,9 @@ char *futhark_context_report(struct futhark_context *ctx)
 {
     if (futhark_context_sync(ctx) != 0)
         return NULL;
-
+    
     struct str_builder builder;
-
+    
     str_builder_init(&builder);
     if (ctx->detail_memory || ctx->profiling || ctx->logging) {
         str_builder(&builder,
@@ -4461,7 +4460,7 @@ char *futhark_context_report(struct futhark_context *ctx)
 char *futhark_context_get_error(struct futhark_context *ctx)
 {
     char *error = ctx->error;
-
+    
     ctx->error = NULL;
     return error;
 }
@@ -4510,10 +4509,10 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
 static int init_constants(struct futhark_context *ctx)
 {
     (void) ctx;
-
+    
     int err = 0;
-
-
+    
+    
   cleanup:
     return err;
 }
@@ -4533,7 +4532,7 @@ struct futhark_i64_3d *futhark_new_i64_3d(struct futhark_context *ctx, const
     struct futhark_i64_3d *bad = NULL;
     struct futhark_i64_3d *arr =
                           (struct futhark_i64_3d *) malloc(sizeof(struct futhark_i64_3d));
-
+    
     if (arr == NULL)
         return bad;
     lock_lock(&ctx->lock);
@@ -4547,7 +4546,7 @@ struct futhark_i64_3d *futhark_new_i64_3d(struct futhark_context *ctx, const
     arr->shape[2] = dim2;
     {
         cudaEvent_t *pevents = NULL;
-
+        
         if (ctx->profiling && !ctx->profiling_paused) {
             pevents = cuda_get_events(&ctx->cuda, &ctx->copy_host_to_dev_runs,
                                       &ctx->copy_host_to_dev_total_runtime);
@@ -4570,7 +4569,7 @@ struct futhark_i64_3d *futhark_new_raw_i64_3d(struct futhark_context *ctx, const
     struct futhark_i64_3d *bad = NULL;
     struct futhark_i64_3d *arr =
                           (struct futhark_i64_3d *) malloc(sizeof(struct futhark_i64_3d));
-
+    
     if (arr == NULL)
         return bad;
     lock_lock(&ctx->lock);
@@ -4584,7 +4583,7 @@ struct futhark_i64_3d *futhark_new_raw_i64_3d(struct futhark_context *ctx, const
     arr->shape[2] = dim2;
     {
         cudaEvent_t *pevents = NULL;
-
+        
         if (ctx->profiling && !ctx->profiling_paused) {
             pevents = cuda_get_events(&ctx->cuda, &ctx->copy_dev_to_dev_runs,
                                       &ctx->copy_dev_to_dev_total_runtime);
@@ -4617,7 +4616,7 @@ int futhark_values_i64_3d(struct futhark_context *ctx,
     CUDA_SUCCEED_FATAL(cuCtxPushCurrent(ctx->cuda.cu_ctx));
     {
         cudaEvent_t *pevents = NULL;
-
+        
         if (ctx->profiling && !ctx->profiling_paused) {
             pevents = cuda_get_events(&ctx->cuda, &ctx->copy_dev_to_host_runs,
                                       &ctx->copy_dev_to_host_total_runtime);
@@ -4657,17 +4656,17 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                  int32_t y_elems_6)
 {
     (void) ctx;
-
+    
     int err = 0;
-
+    
     if (!(num_arrays_4 == 0 || (x_elems_5 == 0 || y_elems_6 == 0))) {
         int32_t muly_8 = squot32(16, x_elems_5);
         int32_t mulx_7 = squot32(16, y_elems_6);
-
+        
         if (num_arrays_4 == 1 && (x_elems_5 == 1 || y_elems_6 == 1)) {
             {
                 cudaEvent_t *pevents = NULL;
-
+                
                 if (ctx->profiling && !ctx->profiling_paused) {
                     pevents = cuda_get_events(&ctx->cuda,
                                               &ctx->copy_dev_to_dev_runs,
@@ -4689,12 +4688,12 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                 CUdeviceptr kernel_arg_10108 = destmem_0.mem;
                 CUdeviceptr kernel_arg_10109 = srcmem_2.mem;
                 unsigned int shared_offset_10107 = 0;
-
+                
                 if ((((((1 && sdiv_up32(x_elems_5, 16) != 0) &&
                         sdiv_up32(sdiv_up32(y_elems_6, muly_8), 16) != 0) &&
                        num_arrays_4 != 0) && 16 != 0) && 16 != 0) && 1 != 0) {
                     int perm[3] = {0, 1, 2};
-
+                    
                     if (sdiv_up32(sdiv_up32(y_elems_6, muly_8), 16) >= 1 <<
                         16) {
                         perm[1] = perm[0];
@@ -4704,13 +4703,13 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                         perm[2] = perm[0];
                         perm[0] = 2;
                     }
-
+                    
                     size_t grid[3];
-
+                    
                     grid[perm[0]] = sdiv_up32(x_elems_5, 16);
                     grid[perm[1]] = sdiv_up32(sdiv_up32(y_elems_6, muly_8), 16);
                     grid[perm[2]] = num_arrays_4;
-
+                    
                     void *kernel_args_10103[] = {&perm[0], &perm[1], &perm[2],
                                                  &shared_offset_10107,
                                                  &destoffset_1, &srcoffset_3,
@@ -4719,7 +4718,7 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                  &kernel_arg_10108,
                                                  &kernel_arg_10109};
                     int64_t time_start_10104 = 0, time_end_10105 = 0;
-
+                    
                     if (ctx->debugging) {
                         fprintf(ctx->log,
                                 "Launching %s with grid size [%ld, %ld, %ld] and block size [%ld, %ld, %ld]; shared memory: %d bytes.\n",
@@ -4735,9 +4734,9 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                                         8)));
                         time_start_10104 = get_wall_time();
                     }
-
+                    
                     cudaEvent_t *pevents = NULL;
-
+                    
                     if (ctx->profiling && !ctx->profiling_paused) {
                         pevents = cuda_get_events(&ctx->cuda,
                                                   &ctx->gpu_map_transpose_i64_low_width_runs,
@@ -4770,13 +4769,13 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                     CUdeviceptr kernel_arg_10115 = destmem_0.mem;
                     CUdeviceptr kernel_arg_10116 = srcmem_2.mem;
                     unsigned int shared_offset_10114 = 0;
-
+                    
                     if ((((((1 && sdiv_up32(sdiv_up32(x_elems_5, mulx_7), 16) !=
                              0) && sdiv_up32(y_elems_6, 16) != 0) &&
                            num_arrays_4 != 0) && 16 != 0) && 16 != 0) && 1 !=
                         0) {
                         int perm[3] = {0, 1, 2};
-
+                        
                         if (sdiv_up32(y_elems_6, 16) >= 1 << 16) {
                             perm[1] = perm[0];
                             perm[0] = 1;
@@ -4785,14 +4784,14 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                             perm[2] = perm[0];
                             perm[0] = 2;
                         }
-
+                        
                         size_t grid[3];
-
+                        
                         grid[perm[0]] = sdiv_up32(sdiv_up32(x_elems_5, mulx_7),
                                                   16);
                         grid[perm[1]] = sdiv_up32(y_elems_6, 16);
                         grid[perm[2]] = num_arrays_4;
-
+                        
                         void *kernel_args_10110[] = {&perm[0], &perm[1],
                                                      &perm[2],
                                                      &shared_offset_10114,
@@ -4803,7 +4802,7 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                      &muly_8, &kernel_arg_10115,
                                                      &kernel_arg_10116};
                         int64_t time_start_10111 = 0, time_end_10112 = 0;
-
+                        
                         if (ctx->debugging) {
                             fprintf(ctx->log,
                                     "Launching %s with grid size [%ld, %ld, %ld] and block size [%ld, %ld, %ld]; shared memory: %d bytes.\n",
@@ -4818,9 +4817,9 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                            8) % 8)));
                             time_start_10111 = get_wall_time();
                         }
-
+                        
                         cudaEvent_t *pevents = NULL;
-
+                        
                         if (ctx->profiling && !ctx->profiling_paused) {
                             pevents = cuda_get_events(&ctx->cuda,
                                                       &ctx->gpu_map_transpose_i64_low_height_runs,
@@ -4853,13 +4852,13 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                         CUdeviceptr kernel_arg_10122 = destmem_0.mem;
                         CUdeviceptr kernel_arg_10123 = srcmem_2.mem;
                         unsigned int shared_offset_10121 = 0;
-
+                        
                         if ((((((1 && sdiv_up32(num_arrays_4 * x_elems_5 *
                                                 y_elems_6, 256) != 0) && 1 !=
                                 0) && 1 != 0) && 256 != 0) && 1 != 0) && 1 !=
                             0) {
                             int perm[3] = {0, 1, 2};
-
+                            
                             if (1 >= 1 << 16) {
                                 perm[1] = perm[0];
                                 perm[0] = 1;
@@ -4868,14 +4867,14 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                 perm[2] = perm[0];
                                 perm[0] = 2;
                             }
-
+                            
                             size_t grid[3];
-
+                            
                             grid[perm[0]] = sdiv_up32(num_arrays_4 * x_elems_5 *
                                                       y_elems_6, 256);
                             grid[perm[1]] = 1;
                             grid[perm[2]] = 1;
-
+                            
                             void *kernel_args_10117[] = {&shared_offset_10121,
                                                          &destoffset_1,
                                                          &srcoffset_3,
@@ -4885,7 +4884,7 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                          &kernel_arg_10122,
                                                          &kernel_arg_10123};
                             int64_t time_start_10118 = 0, time_end_10119 = 0;
-
+                            
                             if (ctx->debugging) {
                                 fprintf(ctx->log,
                                         "Launching %s with grid size [%ld, %ld, %ld] and block size [%ld, %ld, %ld]; shared memory: %d bytes.\n",
@@ -4901,9 +4900,9 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                            8) % 8)));
                                 time_start_10118 = get_wall_time();
                             }
-
+                            
                             cudaEvent_t *pevents = NULL;
-
+                            
                             if (ctx->profiling && !ctx->profiling_paused) {
                                 pevents = cuda_get_events(&ctx->cuda,
                                                           &ctx->gpu_map_transpose_i64_small_runs,
@@ -4939,13 +4938,13 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                         CUdeviceptr kernel_arg_10129 = destmem_0.mem;
                         CUdeviceptr kernel_arg_10130 = srcmem_2.mem;
                         unsigned int shared_offset_10128 = 0;
-
+                        
                         if ((((((1 && sdiv_up32(x_elems_5, 32) != 0) &&
                                 sdiv_up32(y_elems_6, 32) != 0) &&
                                num_arrays_4 != 0) && 32 != 0) && 8 != 0) && 1 !=
                             0) {
                             int perm[3] = {0, 1, 2};
-
+                            
                             if (sdiv_up32(y_elems_6, 32) >= 1 << 16) {
                                 perm[1] = perm[0];
                                 perm[0] = 1;
@@ -4954,13 +4953,13 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                 perm[2] = perm[0];
                                 perm[0] = 2;
                             }
-
+                            
                             size_t grid[3];
-
+                            
                             grid[perm[0]] = sdiv_up32(x_elems_5, 32);
                             grid[perm[1]] = sdiv_up32(y_elems_6, 32);
                             grid[perm[2]] = num_arrays_4;
-
+                            
                             void *kernel_args_10124[] = {&perm[0], &perm[1],
                                                          &perm[2],
                                                          &shared_offset_10128,
@@ -4972,7 +4971,7 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                          &kernel_arg_10129,
                                                          &kernel_arg_10130};
                             int64_t time_start_10125 = 0, time_end_10126 = 0;
-
+                            
                             if (ctx->debugging) {
                                 fprintf(ctx->log,
                                         "Launching %s with grid size [%ld, %ld, %ld] and block size [%ld, %ld, %ld]; shared memory: %d bytes.\n",
@@ -4987,9 +4986,9 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
                                                                      8) % 8)));
                                 time_start_10125 = get_wall_time();
                             }
-
+                            
                             cudaEvent_t *pevents = NULL;
-
+                            
                             if (ctx->profiling && !ctx->profiling_paused) {
                                 pevents = cuda_get_events(&ctx->cuda,
                                                           &ctx->gpu_map_transpose_i64_runs,
@@ -5025,7 +5024,7 @@ static int futrts_builtinzhgpu_map_transpose_i64(struct futhark_context *ctx,
             }
         }
     }
-
+    
   cleanup:
     { }
     return err;
@@ -5036,20 +5035,20 @@ static int futrts_builtinzhiota_i64(struct futhark_context *ctx,
                                     int64_t s_10049)
 {
     (void) ctx;
-
+    
     int err = 0;
     int64_t group_sizze_10054;
-
+    
     group_sizze_10054 =
         *ctx->tuning_params.builtinzhiota_i64zigroup_sizze_10054;
-
+    
     int64_t num_groups_10055 = sdiv_up64(n_10047, group_sizze_10054);
     CUdeviceptr kernel_arg_10134 = mem_10046.mem;
-
+    
     if ((((((1 && num_groups_10055 != 0) && 1 != 0) && 1 != 0) &&
           group_sizze_10054 != 0) && 1 != 0) && 1 != 0) {
         int perm[3] = {0, 1, 2};
-
+        
         if (1 >= 1 << 16) {
             perm[1] = perm[0];
             perm[0] = 1;
@@ -5058,17 +5057,17 @@ static int futrts_builtinzhiota_i64(struct futhark_context *ctx,
             perm[2] = perm[0];
             perm[0] = 2;
         }
-
+        
         size_t grid[3];
-
+        
         grid[perm[0]] = num_groups_10055;
         grid[perm[1]] = 1;
         grid[perm[2]] = 1;
-
+        
         void *kernel_args_10131[] = {&n_10047, &x_10048, &s_10049,
                                      &kernel_arg_10134};
         int64_t time_start_10132 = 0, time_end_10133 = 0;
-
+        
         if (ctx->debugging) {
             fprintf(ctx->log,
                     "Launching %s with grid size [%ld, %ld, %ld] and block size [%ld, %ld, %ld]; shared memory: %d bytes.\n",
@@ -5077,9 +5076,9 @@ static int futrts_builtinzhiota_i64(struct futhark_context *ctx,
                     (long) 1, (int) 0);
             time_start_10132 = get_wall_time();
         }
-
+        
         cudaEvent_t *pevents = NULL;
-
+        
         if (ctx->profiling && !ctx->profiling_paused) {
             pevents = cuda_get_events(&ctx->cuda,
                                       &ctx->builtinzhiota_i64ziiota_i64_10051_runs,
@@ -5100,7 +5099,7 @@ static int futrts_builtinzhiota_i64(struct futhark_context *ctx,
                     time_start_10132);
         }
     }
-
+    
   cleanup:
     { }
     return err;
@@ -5111,12 +5110,12 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
                                  int64_t w_9766)
 {
     (void) ctx;
-
+    
     int err = 0;
     struct memblock_device mem_out_10045;
-
+    
     mem_out_10045.references = NULL;
-
+    
     int32_t i64_res_9767 = sext_i64_i32(seed_9764);
     int32_t unsign_arg_9768 = 5461 ^ i64_res_9767;
     int32_t unsign_arg_9769 = 1 ^ unsign_arg_9768;
@@ -5126,7 +5125,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
     bool bounds_invalid_upwards_9773 = slt64(h_9765, (int64_t) 0);
     bool valid_9774 = !bounds_invalid_upwards_9773;
     bool range_valid_c_9775;
-
+    
     if (!valid_9774) {
         ctx->error = msgprintf("Error: %s%lld%s%lld%s%lld%s\n\nBacktrace:\n%s",
                                "Range ", (long long) (int64_t) 0, "..",
@@ -5138,11 +5137,11 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         err = 1;
         goto cleanup;
     }
-
+    
     bool bounds_invalid_upwards_9777 = slt64(w_9766, (int64_t) 0);
     bool valid_9778 = !bounds_invalid_upwards_9777;
     bool range_valid_c_9779;
-
+    
     if (!valid_9778) {
         ctx->error = msgprintf("Error: %s%lld%s%lld%s%lld%s\n\nBacktrace:\n%s",
                                "Range ", (long long) (int64_t) 0, "..",
@@ -5154,11 +5153,11 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         err = 1;
         goto cleanup;
     }
-
+    
     int64_t binop_y_9982 = (int64_t) 8 * w_9766;
     int64_t bytes_9983 = smax64((int64_t) 0, binop_y_9982);
     struct memblock_device mem_9984;
-
+    
     mem_9984.references = NULL;
     if (memblock_alloc_device(ctx, &mem_9984, bytes_9983, "mem_9984")) {
         err = 1;
@@ -5173,29 +5172,29 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         err = 1;
         goto cleanup;
     }
-
+    
     int64_t binop_y_9986 = (int64_t) 8 * frameSizze_9772;
     int64_t bytes_9987 = smax64((int64_t) 0, binop_y_9986);
     struct memblock_device mem_9988;
-
+    
     mem_9988.references = NULL;
     if (memblock_alloc_device(ctx, &mem_9988, bytes_9987, "mem_9988")) {
         err = 1;
         goto cleanup;
     }
-
+    
     int64_t group_sizze_10059;
-
+    
     group_sizze_10059 = *ctx->tuning_params.shufflerzigroup_sizze_10059;
-
+    
     int64_t num_groups_10060 = sdiv_up64(h_9765 * w_9766, group_sizze_10059);
     CUdeviceptr kernel_arg_10139 = mem_9984.mem;
     CUdeviceptr kernel_arg_10140 = mem_9988.mem;
-
+    
     if ((((((1 && num_groups_10060 != 0) && 1 != 0) && 1 != 0) &&
           group_sizze_10059 != 0) && 1 != 0) && 1 != 0) {
         int perm[3] = {0, 1, 2};
-
+        
         if (1 >= 1 << 16) {
             perm[1] = perm[0];
             perm[0] = 1;
@@ -5204,17 +5203,17 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             perm[2] = perm[0];
             perm[0] = 2;
         }
-
+        
         size_t grid[3];
-
+        
         grid[perm[0]] = num_groups_10060;
         grid[perm[1]] = 1;
         grid[perm[2]] = 1;
-
+        
         void *kernel_args_10136[] = {&h_9765, &w_9766, &kernel_arg_10139,
                                      &kernel_arg_10140};
         int64_t time_start_10137 = 0, time_end_10138 = 0;
-
+        
         if (ctx->debugging) {
             fprintf(ctx->log,
                     "Launching %s with grid size [%ld, %ld, %ld] and block size [%ld, %ld, %ld]; shared memory: %d bytes.\n",
@@ -5223,9 +5222,9 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
                     (long) 1, (int) 0);
             time_start_10137 = get_wall_time();
         }
-
+        
         cudaEvent_t *pevents = NULL;
-
+        
         if (ctx->profiling && !ctx->profiling_paused) {
             pevents = cuda_get_events(&ctx->cuda,
                                       &ctx->shufflerzireplicate_10056_runs,
@@ -5248,16 +5247,16 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
     }
     if (memblock_unref_device(ctx, &mem_9984, "mem_9984") != 0)
         return 1;
-
+    
     int64_t segmap_group_sizze_9913;
-
+    
     segmap_group_sizze_9913 =
         *ctx->tuning_params.shufflerzisegmap_group_sizze_9889;
-
+    
     int64_t segmap_usable_groups_9914 = sdiv_up64(frameSizze_9772,
                                                   segmap_group_sizze_9913);
     struct memblock_device mem_9993;
-
+    
     mem_9993.references = NULL;
     if (memblock_alloc_device(ctx, &mem_9993, bytes_9987, "mem_9993")) {
         err = 1;
@@ -5265,13 +5264,13 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
     }
     if (ctx->debugging)
         fprintf(ctx->log, "%s\n", "\n# SegMap");
-
+    
     CUdeviceptr kernel_arg_10144 = mem_9993.mem;
-
+    
     if ((((((1 && segmap_usable_groups_9914 != 0) && 1 != 0) && 1 != 0) &&
           segmap_group_sizze_9913 != 0) && 1 != 0) && 1 != 0) {
         int perm[3] = {0, 1, 2};
-
+        
         if (1 >= 1 << 16) {
             perm[1] = perm[0];
             perm[0] = 1;
@@ -5280,17 +5279,17 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             perm[2] = perm[0];
             perm[0] = 2;
         }
-
+        
         size_t grid[3];
-
+        
         grid[perm[0]] = segmap_usable_groups_9914;
         grid[perm[1]] = 1;
         grid[perm[2]] = 1;
-
+        
         void *kernel_args_10141[] = {&ctx->global_failure, &h_9765, &w_9766,
                                      &kernel_arg_10144};
         int64_t time_start_10142 = 0, time_end_10143 = 0;
-
+        
         if (ctx->debugging) {
             fprintf(ctx->log,
                     "Launching %s with grid size [%ld, %ld, %ld] and block size [%ld, %ld, %ld]; shared memory: %d bytes.\n",
@@ -5299,9 +5298,9 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
                     (long) 1, (long) 1, (int) 0);
             time_start_10142 = get_wall_time();
         }
-
+        
         cudaEvent_t *pevents = NULL;
-
+        
         if (ctx->profiling && !ctx->profiling_paused) {
             pevents = cuda_get_events(&ctx->cuda,
                                       &ctx->shufflerzisegmap_9918_runs,
@@ -5323,14 +5322,14 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
     }
     if (ctx->debugging)
         fprintf(ctx->log, "%s\n", "");
-
+    
     bool loop_nonempty_9785 = slt64((int64_t) 0, frameSizze_9772);
     bool zzero_9786 = w_9766 == (int64_t) 0;
     bool nonzzero_9787 = !zzero_9786;
     bool loop_not_taken_9788 = !loop_nonempty_9785;
     bool protect_assert_disj_9789 = nonzzero_9787 || loop_not_taken_9788;
     bool nonzzero_cert_9790;
-
+    
     if (!protect_assert_disj_9789) {
         ctx->error = msgprintf("Error: %s\n\nBacktrace:\n%s",
                                "division by zero",
@@ -5346,7 +5345,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         err = 1;
         goto cleanup;
     }
-
+    
     int64_t uniformPick_arg_9791 = sub64(h_9765, (int64_t) 1);
     int64_t uniformPick_arg_9792 = sub64(w_9766, (int64_t) 1);
     int32_t unsign_arg_9793 = zext_i64_i32(uniformPick_arg_9791);
@@ -5357,13 +5356,13 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
     bool zlze_res_9798 = ule32(unsign_arg_9797, 0);
     int32_t shuffleField_2d_res_9799;
     int32_t rng0_9803 = unsign_arg_9771;
-
+    
     for (int64_t i_9802 = 0; i_9802 < frameSizze_9772; i_9802++) {
         int64_t fromH_9806 = sdiv64(i_9802, w_9766);
         int64_t fromW_9807 = smod64(i_9802, w_9766);
         int32_t rand_res_9808;
         int64_t rand_res_9809;
-
+        
         if (zlze_res_9795) {
             rand_res_9808 = rng0_9803;
             rand_res_9809 = (int64_t) 0;
@@ -5379,7 +5378,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             bool loop_while_9818;
             int32_t rng_9819;
             int32_t x_9820;
-
+            
             loop_while_9818 = zgze_res_9814;
             rng_9819 = unsign_arg_9813;
             x_9820 = unsign_arg_9813;
@@ -5390,7 +5389,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
                 bool loop_while_tmp_10081 = zgze_res_9823;
                 int32_t rng_tmp_10082 = unsign_arg_9822;
                 int32_t x_tmp_10083 = unsign_arg_9822;
-
+                
                 loop_while_9818 = loop_while_tmp_10081;
                 rng_9819 = rng_tmp_10082;
                 x_9820 = x_tmp_10083;
@@ -5398,18 +5397,18 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             rand_res_f_res_9815 = loop_while_9818;
             rand_res_f_res_9816 = rng_9819;
             rand_res_f_res_9817 = x_9820;
-
+            
             int32_t unsign_arg_9824 = umod32(rand_res_f_res_9817,
                                              unsign_arg_9794);
             int64_t to_i64_res_9825 = zext_i32_i64(unsign_arg_9824);
-
+            
             rand_res_9808 = rand_res_f_res_9816;
             rand_res_9809 = to_i64_res_9825;
         }
-
+        
         int32_t rand_res_9826;
         int64_t rand_res_9827;
-
+        
         if (zlze_res_9798) {
             rand_res_9826 = rand_res_9808;
             rand_res_9827 = (int64_t) 0;
@@ -5425,7 +5424,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             bool loop_while_9836;
             int32_t rng_9837;
             int32_t x_9838;
-
+            
             loop_while_9836 = zgze_res_9832;
             rng_9837 = unsign_arg_9831;
             x_9838 = unsign_arg_9831;
@@ -5436,7 +5435,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
                 bool loop_while_tmp_10084 = zgze_res_9841;
                 int32_t rng_tmp_10085 = unsign_arg_9840;
                 int32_t x_tmp_10086 = unsign_arg_9840;
-
+                
                 loop_while_9836 = loop_while_tmp_10084;
                 rng_9837 = rng_tmp_10085;
                 x_9838 = x_tmp_10086;
@@ -5444,15 +5443,15 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             rand_res_f_res_9833 = loop_while_9836;
             rand_res_f_res_9834 = rng_9837;
             rand_res_f_res_9835 = x_9838;
-
+            
             int32_t unsign_arg_9842 = umod32(rand_res_f_res_9835,
                                              unsign_arg_9797);
             int64_t to_i64_res_9843 = zext_i32_i64(unsign_arg_9842);
-
+            
             rand_res_9826 = rand_res_f_res_9834;
             rand_res_9827 = to_i64_res_9843;
         }
-
+        
         bool x_9844 = sle64((int64_t) 0, rand_res_9809);
         bool y_9845 = slt64(rand_res_9809, h_9765);
         bool bounds_check_9846 = x_9844 && y_9845;
@@ -5461,7 +5460,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         bool bounds_check_9849 = x_9847 && y_9848;
         bool index_ok_9850 = bounds_check_9846 && bounds_check_9849;
         bool index_certs_9851;
-
+        
         if (!index_ok_9850) {
             ctx->error =
                 msgprintf("Error: %s%lld%s%lld%s%lld%s%lld%s\n\nBacktrace:\n%s",
@@ -5482,13 +5481,13 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             err = 1;
             goto cleanup;
         }
-
+        
         int64_t swap_2d_res_9852;
         int64_t read_res_10145;
-
+        
         {
             cudaEvent_t *pevents = NULL;
-
+            
             if (ctx->profiling && !ctx->profiling_paused) {
                 pevents = cuda_get_events(&ctx->cuda,
                                           &ctx->copy_scalar_from_dev_runs,
@@ -5506,13 +5505,13 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         if (futhark_context_sync(ctx) != 0)
             return 1;
         swap_2d_res_9852 = read_res_10145;
-
+        
         int64_t swap_2d_res_9853;
         int64_t read_res_10146;
-
+        
         {
             cudaEvent_t *pevents = NULL;
-
+            
             if (ctx->profiling && !ctx->profiling_paused) {
                 pevents = cuda_get_events(&ctx->cuda,
                                           &ctx->copy_scalar_from_dev_runs,
@@ -5530,7 +5529,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         if (futhark_context_sync(ctx) != 0)
             return 1;
         swap_2d_res_9853 = read_res_10146;
-
+        
         bool x_9854 = sle64((int64_t) 0, fromH_9806);
         bool y_9855 = slt64(fromH_9806, h_9765);
         bool bounds_check_9856 = x_9854 && y_9855;
@@ -5539,7 +5538,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         bool bounds_check_9859 = x_9857 && y_9858;
         bool index_ok_9860 = bounds_check_9856 && bounds_check_9859;
         bool index_certs_9861;
-
+        
         if (!index_ok_9860) {
             ctx->error =
                 msgprintf("Error: %s%lld%s%lld%s%lld%s%lld%s\n\nBacktrace:\n%s",
@@ -5560,13 +5559,13 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             err = 1;
             goto cleanup;
         }
-
+        
         int64_t lw_val_9862;
         int64_t read_res_10147;
-
+        
         {
             cudaEvent_t *pevents = NULL;
-
+            
             if (ctx->profiling && !ctx->profiling_paused) {
                 pevents = cuda_get_events(&ctx->cuda,
                                           &ctx->copy_scalar_from_dev_runs,
@@ -5583,13 +5582,13 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         if (futhark_context_sync(ctx) != 0)
             return 1;
         lw_val_9862 = read_res_10147;
-
+        
         int64_t lw_val_9863;
         int64_t read_res_10148;
-
+        
         {
             cudaEvent_t *pevents = NULL;
-
+            
             if (ctx->profiling && !ctx->profiling_paused) {
                 pevents = cuda_get_events(&ctx->cuda,
                                           &ctx->copy_scalar_from_dev_runs,
@@ -5609,7 +5608,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         {
             int64_t write_tmp_10149 = lw_val_9862;
             cudaEvent_t *pevents = NULL;
-
+            
             if (ctx->profiling && !ctx->profiling_paused) {
                 pevents = cuda_get_events(&ctx->cuda,
                                           &ctx->copy_scalar_to_dev_runs,
@@ -5628,7 +5627,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         {
             int64_t write_tmp_10150 = lw_val_9863;
             cudaEvent_t *pevents = NULL;
-
+            
             if (ctx->profiling && !ctx->profiling_paused) {
                 pevents = cuda_get_events(&ctx->cuda,
                                           &ctx->copy_scalar_to_dev_runs,
@@ -5647,7 +5646,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         {
             int64_t write_tmp_10151 = swap_2d_res_9852;
             cudaEvent_t *pevents = NULL;
-
+            
             if (ctx->profiling && !ctx->profiling_paused) {
                 pevents = cuda_get_events(&ctx->cuda,
                                           &ctx->copy_scalar_to_dev_runs,
@@ -5666,7 +5665,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         {
             int64_t write_tmp_10152 = swap_2d_res_9853;
             cudaEvent_t *pevents = NULL;
-
+            
             if (ctx->profiling && !ctx->profiling_paused) {
                 pevents = cuda_get_events(&ctx->cuda,
                                           &ctx->copy_scalar_to_dev_runs,
@@ -5682,32 +5681,32 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             if (pevents != NULL)
                 CUDA_SUCCEED_FATAL(cudaEventRecord(pevents[1], 0));
         }
-
+        
         int32_t rng0_tmp_10078 = rand_res_9826;
-
+        
         rng0_9803 = rng0_tmp_10078;
     }
     shuffleField_2d_res_9799 = rng0_9803;
-
+    
     int64_t segmap_group_sizze_9967;
-
+    
     segmap_group_sizze_9967 =
         *ctx->tuning_params.shufflerzisegmap_group_sizze_9937;
-
+    
     int64_t num_groups_9968;
     int32_t max_num_groups_10087;
-
+    
     max_num_groups_10087 = *ctx->tuning_params.shufflerzisegmap_num_groups_9939;
     num_groups_9968 = sext_i64_i32(smax64((int64_t) 1,
                                           smin64(sdiv_up64(frameSizze_9772,
                                                            segmap_group_sizze_9967),
                                                  sext_i32_i64(max_num_groups_10087))));
-
+    
     int64_t binop_x_10032 = (int64_t) 2 * h_9765;
     int64_t binop_x_10033 = w_9766 * binop_x_10032;
     int64_t bytes_10034 = (int64_t) 8 * binop_x_10033;
     struct memblock_device mem_10035;
-
+    
     mem_10035.references = NULL;
     if (memblock_alloc_device(ctx, &mem_10035, bytes_10034, "mem_10035")) {
         err = 1;
@@ -5715,15 +5714,15 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
     }
     if (ctx->debugging)
         fprintf(ctx->log, "%s\n", "\n# SegMap");
-
+    
     CUdeviceptr kernel_arg_10156 = mem_9988.mem;
     CUdeviceptr kernel_arg_10157 = mem_9993.mem;
     CUdeviceptr kernel_arg_10158 = mem_10035.mem;
-
+    
     if ((((((1 && num_groups_9968 != 0) && 1 != 0) && 1 != 0) &&
           segmap_group_sizze_9967 != 0) && 1 != 0) && 1 != 0) {
         int perm[3] = {0, 1, 2};
-
+        
         if (1 >= 1 << 16) {
             perm[1] = perm[0];
             perm[0] = 1;
@@ -5732,18 +5731,18 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
             perm[2] = perm[0];
             perm[0] = 2;
         }
-
+        
         size_t grid[3];
-
+        
         grid[perm[0]] = num_groups_9968;
         grid[perm[1]] = 1;
         grid[perm[2]] = 1;
-
+        
         void *kernel_args_10153[] = {&ctx->global_failure, &h_9765, &w_9766,
                                      &num_groups_9968, &kernel_arg_10156,
                                      &kernel_arg_10157, &kernel_arg_10158};
         int64_t time_start_10154 = 0, time_end_10155 = 0;
-
+        
         if (ctx->debugging) {
             fprintf(ctx->log,
                     "Launching %s with grid size [%ld, %ld, %ld] and block size [%ld, %ld, %ld]; shared memory: %d bytes.\n",
@@ -5752,9 +5751,9 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
                     (long) 1, (int) 0);
             time_start_10154 = get_wall_time();
         }
-
+        
         cudaEvent_t *pevents = NULL;
-
+        
         if (ctx->profiling && !ctx->profiling_paused) {
             pevents = cuda_get_events(&ctx->cuda,
                                       &ctx->shufflerzisegmap_9973_runs,
@@ -5780,12 +5779,12 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         return 1;
     if (memblock_unref_device(ctx, &mem_9993, "mem_9993") != 0)
         return 1;
-
+    
     int64_t binop_x_10037 = (int64_t) 2 * frameSizze_9772;
     int64_t binop_y_10038 = (int64_t) 8 * binop_x_10037;
     int64_t bytes_10039 = smax64((int64_t) 0, binop_y_10038);
     struct memblock_device mem_10040;
-
+    
     mem_10040.references = NULL;
     if (memblock_alloc_device(ctx, &mem_10040, bytes_10039, "mem_10040")) {
         err = 1;
@@ -5830,7 +5829,7 @@ static int futrts_entry_shuffler(struct futhark_context *ctx,
         return 1;
     if (memblock_unref_device(ctx, &mem_out_10045, "mem_out_10045") != 0)
         return 1;
-
+    
   cleanup:
     { }
     return err;
@@ -5844,11 +5843,11 @@ int futhark_entry_shuffler(struct futhark_context *ctx,
     int64_t h_9765;
     int64_t w_9766;
     struct memblock_device mem_out_10045;
-
+    
     mem_out_10045.references = NULL;
-
+    
     int ret = 0;
-
+    
     lock_lock(&ctx->lock);
     CUDA_SUCCEED_FATAL(cuCtxPushCurrent(ctx->cuda.cu_ctx));
     seed_9764 = in0;
@@ -5871,3 +5870,4 @@ int futhark_entry_shuffler(struct futhark_context *ctx,
     lock_unlock(&ctx->lock);
     return ret;
 }
+  

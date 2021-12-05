@@ -71,6 +71,8 @@ shuffleGrid (h, w) =
 sizes :: [(Int,Int)]
 sizes = [  (  10,  10)
          , (  10,  10)
+         , (  100,  10)
+         , (  200,  20)
         ]
 
 main :: IO ()
